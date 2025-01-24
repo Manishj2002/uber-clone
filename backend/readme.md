@@ -59,4 +59,116 @@ Register a new user in the system with their personal information.
     }
   ]
 }
+
+```
+
+## User Login
+
+### POST /users/login
+
+#### Description
+Authenticate an existing user and receive an access token.
+
+#### Request Body
+```json
+{
+  "email": "string",    // Required, valid email format
+  "password": "string"  // Required, min 6 characters
+}
+```
+
+#### Validation Rules
+- `email`: Must be a valid email address format
+- `password`: Minimum 6 characters
+
+#### Responses
+
+| Status Code | Description | Response Body |
+|------------|-------------|---------------|
+| 200 | Login successful | `{ "user": {...}, "token": "jwt_token" }` |
+| 400 | Validation error | `{ "errors": [...] }` |
+| 401 | Invalid credentials | `{ "error": "Invalid credentials" }` |
+| 500 | Server error | `{ "error": "Server error" }` |
+
+#### Example Success Response
+```json
+{
+  "user": {
+    "_id": "60d3b41f7c213e2570339fb1",
+    "fullname": {
+      "firstName": "John",
+      "lastName": "Doe"
+    },
+    "email": "john.doe@example.com"
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+#### Example Error Response
+```json
+{
+  "error": "Invalid credentials"
+}
+```
+
+## Get User Profile
+
+### GET /users/profile
+
+#### Description
+Retrieve the authenticated user's profile information. Requires authentication token.
+
+#### Headers
+```
+Authorization: Bearer <token>
+```
+or Token in cookies
+
+#### Responses
+
+| Status Code | Description | Response Body |
+|------------|-------------|---------------|
+| 200 | Profile retrieved successfully | User object |
+| 401 | Not authenticated | `{ "error": "No token provided" }` or `{ "error": "Invalid token" }` |
+| 404 | User not found | `{ "error": "User not found" }` |
+
+#### Example Success Response
+```json
+{
+  "_id": "60d3b41f7c213e2570339fb1",
+  "fullname": {
+    "firstName": "John",
+    "lastName": "Doe"
+  },
+  "email": "john.doe@example.com"
+}
+```
+
+## User Logout
+
+### GET /users/logout
+
+#### Description
+Log out the currently authenticated user by invalidating their token. Requires authentication token.
+
+#### Headers
+```
+Authorization: Bearer <token>
+```
+or Token in cookies
+
+#### Responses
+
+| Status Code | Description | Response Body |
+|------------|-------------|---------------|
+| 200 | Logout successful | `{ "message": "Logged out successfully" }` |
+| 401 | Not authenticated | `{ "error": "No token provided" }` or `{ "error": "Invalid token" }` |
+| 500 | Server error | `{ "error": "Server error" }` |
+
+#### Example Success Response
+```json
+{
+  "message": "Logged out successfully"
+}
 ```

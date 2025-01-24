@@ -251,3 +251,119 @@ Register a new captain in the system with their personal and vehicle information
 }
 ```
 
+### POST /captains/login
+
+#### Description
+Authenticate an existing captain and receive an access token.
+
+#### Request Body
+```json
+{
+  "email": "string",    // Required, valid email format
+  "password": "string"  // Required, min 6 characters
+}
+```
+
+#### Validation Rules
+- `email`: Must be a valid email address format
+- `password`: Minimum 6 characters
+
+#### Responses
+
+| Status Code | Description | Response Body |
+|------------|-------------|---------------|
+| 200 | Login successful | `{ "captain": {...}, "token": "jwt_token" }` |
+| 400 | Validation error | `{ "errors": [...] }` |
+| 401 | Invalid credentials | `{ "error": "Invalid email or password" }` |
+| 500 | Server error | `{ "message": "Server error" }` |
+
+#### Example Success Response
+```json
+{
+  "captain": {
+    "_id": "60d3b41f7c213e2570339fb1",
+    "fullname": {
+      "firstName": "John",
+      "lastName": "Doe"
+    },
+    "email": "john.doe@example.com",
+    "status": "active",
+    "vehical": {
+      "color": "Black",
+      "plate": "ABC-123",
+      "capacity": 4,
+      "vehicalType": "car"
+    }
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+### GET /captains/profile
+
+#### Description
+Retrieve the authenticated captain's profile information. Requires authentication token.
+
+#### Headers
+```
+Authorization: Bearer <token>
+```
+or Token in cookies
+
+#### Responses
+
+| Status Code | Description | Response Body |
+|------------|-------------|---------------|
+| 200 | Profile retrieved successfully | Captain object |
+| 401 | Not authenticated | `{ "error": "Unauthorized" }` |
+| 500 | Server error | `{ "message": "Server error" }` |
+
+#### Example Success Response
+```json
+{
+  "_id": "60d3b41f7c213e2570339fb1",
+  "fullname": {
+    "firstName": "John",
+    "lastName": "Doe"
+  },
+  "email": "john.doe@example.com",
+  "status": "active",
+  "vehical": {
+    "color": "Black",
+    "plate": "ABC-123",
+    "capacity": 4,
+    "vehicalType": "car"
+  },
+  "location": {
+    "lat": 31.5204,
+    "lng": 74.3587
+  }
+}
+```
+
+### GET /captains/logout
+
+#### Description
+Log out the currently authenticated captain by invalidating their token. Requires authentication token.
+
+#### Headers
+```
+Authorization: Bearer <token>
+```
+or Token in cookies
+
+#### Responses
+
+| Status Code | Description | Response Body |
+|------------|-------------|---------------|
+| 200 | Logout successful | `{ "message": "Logged out successfully" }` |
+| 401 | Not authenticated | `{ "error": "Unauthorized" }` |
+| 500 | Server error | `{ "message": "Server error" }` |
+
+#### Example Success Response
+```json
+{
+  "message": "Logged out successfully"
+}
+```
+

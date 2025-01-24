@@ -172,3 +172,82 @@ or Token in cookies
   "message": "Logged out successfully"
 }
 ```
+
+## Captain API Documentation
+
+### POST /captains/register
+
+#### Description
+Register a new captain in the system with their personal and vehicle information.
+
+#### Request Body
+```json
+{
+  "fullname": {
+    "firstName": "string",    // Required, min 3 characters
+    "lastName": "string"      // Optional, min 3 characters if provided
+  },
+  "email": "string",         // Required, valid email format
+  "password": "string",      // Required, min 6 characters
+  "vehical": {
+    "color": "string",       // Required, min 3 characters
+    "plate": "string",       // Required, min 3 characters
+    "capacity": "number",    // Required, min 1
+    "vehicalType": "string"  // Required, enum: car|motorcycle|auto
+  }
+}
+```
+
+#### Validation Rules
+- `fullname.firstName`: Minimum 3 characters
+- `email`: Must be a valid email address format
+- `password`: Minimum 6 characters
+- `vehical.color`: Minimum 3 characters
+- `vehical.plate`: Minimum 3 characters
+- `vehical.capacity`: Minimum value of 1
+- `vehical.vehicalType`: Must be one of: 'car', 'motorcycle', 'auto'
+- Email must be unique in the system
+
+#### Responses
+
+| Status Code | Description | Response Body |
+|------------|-------------|---------------|
+| 201 | Captain successfully created | `{ "captain": {...}, "token": "jwt_token" }` |
+| 400 | Validation error or email exists | `{ "errors": [...] }` |
+| 500 | Server error | `{ "error": "Server error" }` |
+
+#### Example Success Response
+```json
+{
+  "captain": {
+    "_id": "60d3b41f7c213e2570339fb1",
+    "fullname": {
+      "firstName": "John",
+      "lastName": "Doe"
+    },
+    "email": "john.doe@example.com",
+    "status": "inactive",
+    "vehical": {
+      "color": "Black",
+      "plate": "ABC-123",
+      "capacity": 4,
+      "vehicalType": "car"
+    }
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+#### Example Error Response
+```json
+{
+  "errors": [
+    {
+      "msg": "Vehicle color must be at least 3 characters long",
+      "param": "vehical.color",
+      "location": "body"
+    }
+  ]
+}
+```
+

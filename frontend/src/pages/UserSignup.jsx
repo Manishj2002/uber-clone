@@ -1,20 +1,47 @@
-import { useState } from "react"
-import { Link } from "react-router-dom"
-
+import { useContext, useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import  { UserDataContext } from "../context/UserContext"
+import axios from 'axios'
 const UserSignup = () => {
   const [email, setemail] = useState('')
   const [password, setpassword] = useState('')
   const [firstname, setfirstname] = useState('')
   const [lastname, setlastname] = useState('')
   const [userData, setuserData] = useState({})
-  const submitHandler = (e) => {
-    e.preventDefault()
-    setuserData({ email, password,fullname:{ firstname, lastname } })
-    setemail('')
-    setpassword('')
-    setfirstname('')
-    setlastname('')
-  }
+  const navigate = useNavigate()
+  const {user,setuser} = useContext(UserDataContext)
+  const submitHandler = async (e) => {
+    e.preventDefault();
+  
+    // Create user data object
+    const userData = { 
+      email, 
+      password, 
+      fullname: { firstname, lastname } 
+    };
+  
+    try {
+      // Send data directly in the POST request
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/register`, userData);
+  
+      // Check if the response is successful
+      if (response.status === 201) {
+        const data = response.data;
+        setuser(data.user);
+        localStorage.setItem('token', data.token);
+        navigate('/home');
+      }
+    } catch (error) {
+      console.error('Error during signup:', error.response?.data || error.message);
+    }
+  
+    // Clear form fields
+    setemail('');
+    setpassword('');
+    setfirstname('');
+    setlastname('');
+  };
+  
   return (
     <div className="min-h-screen w-full flex flex-col  justify-between bg-[#eeeeee]">
     <div>
@@ -79,7 +106,7 @@ const UserSignup = () => {
              className="bg-blue-500 w-full hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
              type="submit"
            >
-             LogIn
+             Create Account
            </button>
          </div>
        </form>

@@ -34,7 +34,7 @@ const captainSchema = new mongoose.Schema({
         enum: ['active', 'inactive'],
         default: 'inactive'
     },
-    vehical: {
+    vehicleDetails: {  // Changed from 'vehical' to 'vehicleDetails'
         color: {
             type: String,
             required: true,
@@ -50,7 +50,7 @@ const captainSchema = new mongoose.Schema({
             required: true,
             min: 1
         },
-        vehicalType: {
+        vehicleType: {  // Changed from 'vehicalType' to 'vehicleType'
             type: String,
             required: true,
             enum: ['car', 'motorcycle', 'auto']
@@ -64,7 +64,7 @@ const captainSchema = new mongoose.Schema({
             type: Number,
         }
     }
-});
+}, { timestamps: true });
 
 // Instance Methods
 captainSchema.methods.generateAuthToken = function() {

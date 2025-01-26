@@ -1,46 +1,59 @@
 const { validationResult } = require('express-validator');
+const jwt = require('jsonwebtoken'); // Add this import
 const captainService = require('../services/captain.service');
 const captainModel = require('../models/captain.model');
 const BlacklistTokenModel = require('../models/blacklistToken.model');
 
 module.exports.registerCaptain = async (req, res) => {
     try {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({ errors: errors.array() });
+        console.log('Received registration data:', req.body); // Debug log
+
+        const { email, password, fullname, vehicleDetails } = req.body;
+
+        // Explicit field validation
+        if (!email || !password || !fullname.firstName || !fullname.lastName || 
+            !vehicleDetails.color || !vehicleDetails.plate || 
+            !vehicleDetails.capacity || !vehicleDetails.vehicleType) {
+            return res.status(400).json({ message: 'All fields are required' });
         }
 
-        const { email, fullname, password, vehical } = req.body;
+        // Hash the password
+        const hashedPassword = await captainModel.hashPassword(password);
 
-        // Check if captain already exists
-        const captainExists = await captainModel.findOne({ email });
-        if (captainExists) {
-            return res.status(400).json({ error: 'Email already exists' });
-        }
-
-        // Create new captain using service
-        const captain = await captainService.createCaptain({
-            firstName: fullname.firstName,
-            lastName: fullname.lastName,
+        // Create new captain
+        const newCaptain = new captainModel({
             email,
-            password,
-            color: vehical.color,
-            plate: vehical.plate,
-            capacity: vehical.capacity,
-            vehicalType: vehical.vehicalType,
+            password: hashedPassword, // Use hashed password
+            fullname,
+            vehicleDetails
         });
 
-        // Generate JWT token
-        const token = captain.generateAuthToken();
+        // Save captain
+        const savedCaptain = await newCaptain.save();
+        
+        // Generate token
+        const token = jwt.sign(
+            { id: savedCaptain._id },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+        // Remove password from response
+        savedCaptain.password = undefined;
 
         res.status(201).json({
-            message: 'Captain registered successfully',
-            token,
-            captain,
+            captain: savedCaptain,
+            token
         });
+
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: error.message || 'Server error' });
+        if (error.code === 11000) {
+            return res.status(400).json({ message: 'Email already exists' });
+        }
+        res.status(500).json({ 
+            message: 'Registration failed', 
+            error: error.message 
+        });
     }
 };
 
@@ -70,7 +83,6 @@ module.exports.loginCaptain = async (req, res) => {
         res.cookie('token', token);
         res.status(200).json({ token, captain });
     } catch (error) {
-        console.error(error);
         res.status(500).json({ message: error.message || 'Server error' });
     }
 };
